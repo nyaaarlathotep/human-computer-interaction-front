@@ -75,7 +75,12 @@
           class="submit-btn"
           @click="handleSubmit"
         >
-          提交简历
+                  <router-link 
+          to="/upload" 
+          class="action-button upload-button"
+        >
+          上传简历
+        </router-link>
         </button>
         <button 
           class="draft-btn"
@@ -118,7 +123,6 @@ export default {
       console.log('提交数据:', this.formData)
       console.log('上传文件:', this.resumeFile)
       alert('简历提交成功！')
-      this.$router.push('/interview')
     },
     saveDraft() {
       // 这里添加保存草稿逻辑

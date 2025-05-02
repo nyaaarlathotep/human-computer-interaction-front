@@ -18,6 +18,7 @@
         >
           上传简历
         </router-link>
+        
         <router-link 
           to="/interview" 
           class="action-button experience-button"
