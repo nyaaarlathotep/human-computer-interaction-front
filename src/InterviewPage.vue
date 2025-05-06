@@ -13,6 +13,16 @@
     <div class="interview-box">
       <!-- 视频区域 -->
       <div class="video-area">
+        <video 
+  ref="videoPlayer"
+  class="video-background"
+  :src="currentVideoSrc"
+  playsinline
+  autoplay
+  @loadedmetadata="handleVideoReady"
+  @error="handleVideoError"
+  @timeupdate="checkVideoPlaying"
+></video>
         <div class="question-area">
           <div class="main-question">问题：{{ currentQuestion }}</div>
           <div v-if="followUpQuestion" class="follow-up-question">
@@ -44,11 +54,18 @@ export default {
     return {
       isRecording: false,
       progress: 0,
-      duration: 0, // 秒
+      duration: 0,
       timer: null,
       currentQuestion: "请简要介绍你的项目经历",
       followUpQuestion: "你在项目中遇到的最大挑战是什么？",
-      // 可以添加更多问题...
+      currentVideoIndex: 0,
+      totalVideos: 4, // 根据实际视频数量修改
+      videoSources: [
+        '/videos/1.mp4',
+        '/videos/2.mp4',
+        '/videos/3.mp4',
+        '/videos/4.mp4'
+      ]
     }
   },
   computed: {
@@ -56,6 +73,9 @@ export default {
       const mins = Math.floor(this.duration / 60)
       const secs = this.duration % 60
       return `${mins}:${secs.toString().padStart(2, '0')}`
+    },
+    currentVideoSrc() {
+      return `/videos/${this.currentVideoIndex + 1}.mp4`
     }
   },
   methods: {
@@ -72,80 +92,104 @@ export default {
       this.progress = 0
       this.timer = setInterval(() => {
         this.duration++
-        this.progress = (this.duration / 180) * 100 // 3分钟进度
-        if (this.duration >= 180) this.stopRecording()
+        this.progress = (this.duration / 180) * 100
+        if (this.duration >= 60) this.stopRecording()
       }, 1000)
     },
     stopRecording() {
       this.isRecording = false
       clearInterval(this.timer)
+      if (this.currentVideoIndex < this.totalVideos - 1) {
+        this.currentVideoIndex++
+      }
+    },
+    playVideo() {
+      const video = this.$refs.videoPlayer
+      video.play().catch(error => {
+        console.error('视频播放失败:', error)
+      })
+    }
+  },
+  mounted() {
+    console.log('视频路径验证:', this.currentVideoSrc)
+
+    this.playVideo()
+  },
+  handleVideoReady() {
+    const video = this.$refs.videoPlayer
+    console.log('视频元数据加载完成', {
+      width: video.videoWidth,
+      height: video.videoHeight
+    })
+    
+    // 强制播放（处理浏览器自动播放策略）
+    const playPromise = video.play()
+    
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        console.log('自动播放被阻止，需要用户交互',error)
+        // 可以在这里添加播放按钮覆盖层
+      })
+    }
+  },
+  
+  handleVideoError(error) {
+    console.error('视频加载错误:', error.target.error)
+    // 错误代码对照：
+    // 1 = MEDIA_ERR_ABORTED (用户取消)
+    // 2 = MEDIA_ERR_NETWORK 
+    // 3 = MEDIA_ERR_DECODE
+    // 4 = MEDIA_ERR_SRC_NOT_SUPPORTED
+  },
+  
+  checkVideoPlaying() {
+    if (this.$refs.videoPlayer.readyState > 2) {
+      console.log('视频实际播放状态:', !this.$refs.videoPlayer.paused)
     }
   }
 }
 </script>
 
 <style scoped>
-.interview-container {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 20px;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 0 20px;
-}
-
-.signal {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #27ae60;
-}
-
-.dot {
-  width: 12px;
-  height: 12px;
-  background: #27ae60;
-  border-radius: 50%;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-
-.interview-box {
-  position: relative;
-  height: 850px;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+/* 新增视频样式 */
+.video-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
 }
 
 .video-area {
   position: relative;
-  height: 80%;
-  background: url('./assets/interviewer.jpg') center/cover;
+  height: 700px; /* 根据实际布局调整 */
+  width: 100%;
+  background: #000; /* 视频加载前的背景 */
 }
 
+/* 小窗口调整 */
 .video-area::after {
-  content: '';
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 120px;
-  height: 160px;
-  background: url('./assets/interviewee.jpg') center/cover;
-  border: 3px solid white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  /* 原有样式保持不变 */
+  z-index: 2; /* 确保在视频上方 */
 }
+
+.question-area {
+  /* 原有样式保持不变 */
+  z-index: 3; /* 确保在视频和小窗口上方 */
+}
+
+/* 视频加载指示器 */
+.video-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  z-index: 2;
+}
+
 
 .question-area {
   position: absolute;
@@ -155,6 +199,7 @@ export default {
   padding: 20px;
   background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.7));
   color: white;
+  z-index: 2;
 }
 
 .main-question {
