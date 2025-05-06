@@ -152,6 +152,36 @@ export default {
 </script>
 
 <style scoped>
+.interview-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 20px;
+}
+
+.signal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #27ae60;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  background: #27ae60;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+
 /* 新增视频样式 */
 .video-background {
   position: absolute;
@@ -166,7 +196,7 @@ export default {
   position: relative;
   width: 100%;
   /* 创建1:1宽高比 */
-  padding-top: 50%; /* 关键样式 */
+  padding-top: 65%; /* 关键样式 */
   background: #000; /* 视频加载前的背景色 */
   overflow: hidden;
 }
@@ -177,9 +207,32 @@ export default {
   z-index: 2; /* 确保在视频上方 */
 }
 
+.interviewee-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 15%;  /* 响应式宽度 */
+  max-width: 120px;
+  height: 20%; /* 响应式高度 */
+  max-height: 160px;
+  background: url('./assets/interviewee.jpg') center/cover;
+  border: 3px solid white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 3; /* 确保在视频上方 */
+  /* 添加悬停动画 */
+  transition: transform 0.3s ease;
+}
+
+.interviewee-overlay:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+/* 问题区域层级调整 */
 .question-area {
   /* 原有样式保持不变 */
-  z-index: 3; /* 确保在视频和小窗口上方 */
+  z-index: 4; /* 确保在最顶层 */
 }
 
 /* 视频加载指示器 */
