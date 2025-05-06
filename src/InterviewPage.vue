@@ -23,6 +23,7 @@
   @error="handleVideoError"
   @timeupdate="checkVideoPlaying"
 ></video>
+      <div class="interviewee-overlay"></div>
         <div class="question-area">
           <div class="main-question">问题：{{ currentQuestion }}</div>
           <div v-if="followUpQuestion" class="follow-up-question">
@@ -92,8 +93,8 @@ export default {
       this.progress = 0
       this.timer = setInterval(() => {
         this.duration++
-        this.progress = (this.duration / 180) * 100
-        if (this.duration >= 60) this.stopRecording()
+        this.progress = (this.duration / 30) * 100
+        if (this.duration >= 30) this.stopRecording()
       }, 1000)
     },
     stopRecording() {
@@ -158,15 +159,16 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  z-index: 1;
+  object-fit: cover; /* 保持比例填充 */
 }
 
 .video-area {
   position: relative;
-  height: 700px; /* 根据实际布局调整 */
   width: 100%;
-  background: #000; /* 视频加载前的背景 */
+  /* 创建1:1宽高比 */
+  padding-top: 50%; /* 关键样式 */
+  background: #000; /* 视频加载前的背景色 */
+  overflow: hidden;
 }
 
 /* 小窗口调整 */
@@ -267,13 +269,15 @@ export default {
 
 @media (max-width: 768px) {
   .interview-box {
-    height: 500px;
-  }
+  position: relative;
+  width: 100%;
+  max-width: 800px; /* 根据需求调整 */
+  margin: 0 auto;
+}
   
-  .video-area::after {
-    width: 80px;
-    height: 100px;
-  }
+  
+  
+
   
   .main-question {
     font-size: 16px;
