@@ -60,7 +60,7 @@ export default {
       currentQuestion: "请简要介绍你的项目经历",
       followUpQuestion: "你在项目中遇到的最大挑战是什么？",
       currentVideoIndex: 0,
-      totalVideos: 4, // 根据实际视频数量修改
+      totalVideos: 5, // 根据实际视频数量修改
       videoSources: [
         '/videos/1.mp4',
         '/videos/2.mp4',
