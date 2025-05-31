@@ -1,6 +1,5 @@
 <template>
   <div class="interview-container">
-
     <!-- 新增右侧会话面板 -->
     <div class="chat-panel" :class="{ expanded: isChatExpanded }">
       <!-- 选项卡 -->
@@ -33,16 +32,24 @@
       <!-- 视频区域 -->
       <div class="video-area">
         <video 
-  ref="videoPlayer"
-  class="video-background"
-  :src="currentVideoSrc"
-  playsinline
-  autoplay
-  @loadedmetadata="handleVideoReady"
-  @error="handleVideoError"
-  @timeupdate="checkVideoPlaying"
-></video>
-      <div class="interviewee-overlay"></div>
+          ref="videoPlayer"
+          class="video-background"
+          :src="currentVideoSrc"
+          playsinline
+          autoplay
+          @loadedmetadata="handleVideoReady"
+          @error="handleVideoError"
+          @timeupdate="checkVideoPlaying"
+        ></video>
+        <!-- 新增摄像头画面 -->
+        <video 
+          ref="cameraVideo"
+          class="interviewee-overlay"
+          autoplay
+          muted
+          playsinline
+          :style="{ width: cameraWidth, height: cameraHeight }"
+        ></video>
         <div class="question-area">
           <div class="main-question">问题：{{ currentQuestion }}</div>
           <div v-if="followUpQuestion" class="follow-up-question">
@@ -67,6 +74,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 export default {
@@ -108,7 +116,11 @@ export default {
           content: '我叫xxx，毕业于xx大学，意向岗位为xx。我的工作经历有.....',
           time: '10:04'
         },
-      ]
+      ],
+      cameraStream: null,
+      cameraVideo: null,
+      cameraWidth: '15%',
+      cameraHeight: '20%'
     }
   },
   computed: {
@@ -122,6 +134,40 @@ export default {
     }
   },
   methods: {
+    initCamera() {
+      const constraints = { video: { width: 640, height: 480 } };
+      
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+          this.cameraStream = stream;
+          this.cameraVideo = this.$refs.cameraVideo;
+          this.cameraVideo.srcObject = stream;
+          
+          // 调整尺寸适配容器
+          this.adjustCameraSize();
+          window.addEventListener('resize', this.adjustCameraSize);
+        })
+        .catch(error => {
+          console.error('摄像头权限获取失败:', error);
+          // 处理权限拒绝情况，可添加提示
+        });
+    },
+
+    stopCamera() {
+      if (this.cameraStream) {
+        this.cameraStream.getTracks().forEach(track => track.stop());
+        this.cameraStream = null;
+      }
+      window.removeEventListener('resize', this.adjustCameraSize);
+    },
+
+    adjustCameraSize() {
+      const container = this.$refs.videoArea;
+      if (container) {
+        this.cameraWidth = `${container.clientWidth * 0.15}px`; // 15%宽度
+        this.cameraHeight = `${container.clientHeight * 0.2}px`; // 20%高度
+      }
+    },
     toggleRecording() {
       if (this.isRecording) {
         this.stopRecording()
@@ -155,8 +201,12 @@ export default {
   },
   mounted() {
     console.log('视频路径验证:', this.currentVideoSrc)
-
+    this.initCamera()
     this.playVideo()
+  },
+  beforeUnmount() {
+    // 组件卸载时释放摄像头资源
+    this.stopCamera()
   },
   handleVideoReady() {
     const video = this.$refs.videoPlayer
@@ -257,19 +307,16 @@ export default {
   position: absolute;
   top: 20px;
   right: 20px;
-  width: 15%;  /* 响应式宽度 */
-  max-width: 120px;
-  height: 20%; /* 响应式高度 */
-  max-height: 160px;
-  background: url('./assets/interviewee.jpg') center/cover;
+  background: none; /* 移除背景图片 */
   border: 3px solid white;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  z-index: 3; /* 确保在视频上方 */
-  /* 添加悬停动画 */
+  z-index: 3;
   transition: transform 0.3s ease;
+  object-fit: cover; /* 保持视频比例 */
 }
 
+/* 悬停效果保留 */
 .interviewee-overlay:hover {
   transform: scale(1.05);
   cursor: pointer;
