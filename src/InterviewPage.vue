@@ -70,6 +70,9 @@
           <div class="progress-bar" :style="{ width: progress + '%' }"></div>
           <div class="time-display">{{ formattedTime }}</div>
         </div>
+        <button class="end-interview-btn" @click="endInterview">
+          结束面试
+        </button>
       </div>
     </div>
   </div>
@@ -385,6 +388,25 @@ export default {
         URL.revokeObjectURL(url);
       }, 100);
     },
+    endInterview() {
+      // 停止所有媒体流
+      this.stopCamera();
+      this.stopAudioRecording();
+
+      // 停止答题计时器（如果正在答题）
+      if (this.isRecording) {
+        clearInterval(this.timer);
+        this.isRecording = false;
+      }
+
+      // 停止所有媒体轨道
+      if (this.audioStream) {
+        this.audioStream.getTracks().forEach(track => track.stop());
+      }
+
+      // 跳转到报告页面
+      this.$router.push('/report');
+    }
   },
   mounted() {
     console.log('视频路径验证:', this.currentVideoSrc)
@@ -699,6 +721,52 @@ export default {
   .chat-tab {
     left: -50px;
     padding: 12px 6px;
+  }
+}
+/* 新增结束面试按钮样式 */
+.end-interview-btn {
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #ff6b6b, #ff4757);
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.end-interview-btn::before {
+  content: "🚪";
+  font-size: 18px;
+}
+
+.end-interview-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+}
+
+.end-interview-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .end-interview-btn {
+    right: 15px;
+    bottom: 15px;
+    padding: 12px 20px;
+    font-size: 14px;
   }
 }
 </style>

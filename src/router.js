@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import UploadResume from './UploadResume.vue'
 import HomePage from './HomePage.vue'
+import InterviewReport from "@/InterviewReport.vue";
 
 const routes = [
     {
@@ -13,6 +14,11 @@ const routes = [
     name: 'Upload',
     component: UploadResume // 必须指向正确的组件
   },
+    {
+        path: '/report',
+        name: 'Report',
+        component: InterviewReport // 必须指向正确的组件
+    },
   {
     path: '/interview',
     component: () => import('./InterviewPage.vue')
